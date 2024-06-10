@@ -19,6 +19,10 @@ except according to the terms contained in the LICENSE file.
         <form @submit.prevent="submit">
           <form-group ref="displayName" v-model.trim="displayName"
             :placeholder="$t('field.displayName')" required autocomplete="off"/>
+
+          <form-group ref="password" v-model.trim="password" type="password"
+            :placeholder="$t('field.password')" required autocomplete="off"/>
+
           <div class="modal-actions">
             <button type="submit" class="btn btn-primary"
               :aria-disabled="awaitingResponse">
@@ -107,6 +111,7 @@ export default {
       // indicates the current step.
       step: 0,
       displayName: '',
+      password: '',
       created: null
     };
   },
@@ -115,6 +120,7 @@ export default {
       if (!state) {
         this.step = 0;
         this.displayName = '';
+        this.password = '';
         this.created = null;
       }
     }
@@ -124,16 +130,17 @@ export default {
       this.$refs.displayName.focus();
     },
     submit() {
+      console.log("Submitting:", this.displayName, this.password);
       this.request({
         method: 'POST',
         url: apiPaths.fieldKeys(this.project.id),
-        data: { displayName: this.displayName }
+        data: { displayName: this.displayName, password: this.password }
       })
         .then(({ data }) => {
           // Reset the form.
           this.alert.blank();
           this.displayName = '';
-
+          this.password = '';
           this.step = 1;
           this.created = data;
         })
