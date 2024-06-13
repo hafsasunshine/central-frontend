@@ -16,7 +16,7 @@ except according to the terms contained in the LICENSE file.
         <span>{{ $t('title') }}</span>
         <button v-if="project.dataExists && project.permits('form.create')"
           id="form-list-create-button" type="button" class="btn btn-primary"
-          @click="createModal.show()">
+          @click="createModal.show(0)">
           <span class="icon-plus-circle"></span>{{ $t('action.create') }}&hellip;
         </button>
         <form-sort v-model="sortMode"/>

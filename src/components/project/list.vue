@@ -19,6 +19,13 @@ except according to the terms contained in the LICENSE file.
           @click="createModal.show()">
           <span class="icon-plus-circle"></span>{{ $t('action.create') }}&hellip;
         </button>
+
+        <button v-if="currentUser.can('project.create')"
+          id="project-list-import-button" type="button" class="btn btn-secondary"
+          @click="importModal.show()">
+          <span class="icon-upload"></span>{{ $t('action.import') }}&hellip;
+        </button>
+
         <project-sort v-model="sortMode"/>
       </template>
       <template #body>
@@ -58,6 +65,8 @@ except according to the terms contained in the LICENSE file.
     </page-section>
     <project-new v-bind="createModal" @hide="createModal.hide()"
       @success="afterCreate"/>
+
+    <project-import v-bind="importModal" @hide="importModal.hide()" @success="afterImport"/>
   </div>
 </template>
 
@@ -72,6 +81,7 @@ import ProjectNew from './new.vue';
 import ProjectHomeBlock from './home-block.vue';
 import ProjectSort from './sort.vue';
 import SentenceSeparator from '../sentence-separator.vue';
+import ProjectImport from './import.vue';
 
 import sortFunctions from '../../util/sort';
 import useChunkyArray from '../../composables/chunky-array';
@@ -89,7 +99,8 @@ export default {
     ProjectNew,
     ProjectHomeBlock,
     ProjectSort,
-    SentenceSeparator
+    SentenceSeparator,
+    ProjectImport
   },
   inject: ['alert'],
   setup() {
@@ -113,6 +124,7 @@ export default {
       sortMode, sortFunction,
       activeProjects, chunkyProjects,
       createModal: modalData(),
+      importModal: modalData(),
       projectPath
     };
   },
@@ -164,6 +176,11 @@ export default {
       const message = this.$t('alert.create');
       this.$router.push(this.projectPath(project.id))
         .then(() => { this.alert.success(message); });
+    },
+    afterImport(project) {
+      const message = this.$t('alert.import');
+      this.$router.push(this.projectPath(project.id))
+        .then(() => { this.alert.success(message); });
     }
   }
 };
@@ -187,14 +204,16 @@ export default {
     "archived": "Archived Projects",
     "action": {
       // This is the text of a button that is used to create a new Project.
-      "create": "New"
+      "create": "New",
+      "import": "Import" 
     },
     "emptyTable": {
       "canCreate": "To get started, create a Project. Projects help you organize your data by grouping related Forms and Users.",
       "cannotCreate": "There are no Projects to show. If you expect to see Projects here, talk to the person who gave you this account. They may need to assign a Project Role for Projects you’re supposed to see."
     },
     "alert": {
-      "create": "Your new Project has been successfully created."
+      "create": "Your new Project has been successfully created.",
+      "import": "blablabla"
     }
   }
 }
