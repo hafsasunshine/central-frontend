@@ -9,6 +9,7 @@ https://www.apache.org/licenses/LICENSE-2.0. No part of ODK Central,
 including this file, may be copied, modified, propagated, or distributed
 except according to the terms contained in the LICENSE file.
 -->
+<!-- Hafsa edited this file-->
 <template>
   <div id="project-list">
     <page-section>
@@ -22,13 +23,33 @@ except according to the terms contained in the LICENSE file.
 
         <button v-if="currentUser.can('project.create')"
           id="project-list-import-button" type="button" class="btn btn-secondary"
-          @click="importModal.show()">
-          <span class="icon-upload"></span>{{ $t('action.import') }}&hellip;
+          @click="openModal">
+          <span class="icon-upload"></span> Import &hellip;
         </button>
 
         <project-sort v-model="sortMode"/>
       </template>
       <template #body>
+
+            <FileUploadModal v-if="modalOpen" @file-selected="handleFileSelected" @close="closeModal" />
+    <div v-if="sheetData">
+      <h2>Excel Sheet Data</h2>
+      <div class="table-container">
+      <table border="1">
+        <thead>
+          <tr>
+            <th v-for="(header, index) in sheetData[0]" :key="index">{{ header }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(row, rowIndex) in sheetData.slice(1)" :key="rowIndex">
+            <td v-for="(cell, cellIndex) in row" :key="cellIndex">{{ formatCell(cell) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    </div>
+
         <div v-if="projects.dataExists">
           <project-home-block v-for="project of chunkyProjects" :key="project.id"
             :project="project" :sort-func="sortFunction"
@@ -65,8 +86,6 @@ except according to the terms contained in the LICENSE file.
     </page-section>
     <project-new v-bind="createModal" @hide="createModal.hide()"
       @success="afterCreate"/>
-
-    <project-import v-bind="importModal" @hide="importModal.hide()" @success="afterImport"/>
   </div>
 </template>
 
@@ -81,7 +100,9 @@ import ProjectNew from './new.vue';
 import ProjectHomeBlock from './home-block.vue';
 import ProjectSort from './sort.vue';
 import SentenceSeparator from '../sentence-separator.vue';
-import ProjectImport from './import.vue';
+
+import FileUploadModal from './import.vue'; 
+import { format } from 'date-fns';
 
 import sortFunctions from '../../util/sort';
 import useChunkyArray from '../../composables/chunky-array';
@@ -100,7 +121,7 @@ export default {
     ProjectHomeBlock,
     ProjectSort,
     SentenceSeparator,
-    ProjectImport
+    FileUploadModal,
   },
   inject: ['alert'],
   setup() {
@@ -125,7 +146,7 @@ export default {
       activeProjects, chunkyProjects,
       createModal: modalData(),
       importModal: modalData(),
-      projectPath
+      projectPath,
     };
   },
   computed: {
@@ -171,6 +192,15 @@ export default {
       return dsShown > 15 && limit > 3 ? limit - 1 : limit;
     }
   },
+  data(){
+    return{
+      modalOpen: false,
+      sheetData: null,
+    };
+  },
+  created() {
+    this.loadStoredData();
+  },
   methods: {
     afterCreate(project) {
       const message = this.$t('alert.create');
@@ -181,12 +211,40 @@ export default {
       const message = this.$t('alert.import');
       this.$router.push(this.projectPath(project.id))
         .then(() => { this.alert.success(message); });
-    }
-  }
+    },
+    openModal() {
+      this.modalOpen = true;
+    },
+    closeModal(){
+      this.modalOpen = false;
+    },
+    handleFileSelected(sheetData){
+      this.sheetData = sheetData;
+      this.storeData(sheetData);
+      this.modalOpen = false; //close the modal after file selection
+    },
+    formatCell(cell){
+      //check if the cell is a date serial number and format it 
+      if (typeof cell === 'number') {
+        const date = new Date ((cell - 25569) * 86400 * 1000);
+        return format (date, 'MM/dd/yyyy');  
+      }
+      return cell;
+    },
+    storeData(data) {
+      localStorage.setItem('sheetData', JSON.stringify(data));
+    },
+    loadStoredData() {
+      const storedData = localStorage.getItem('sheetData');
+      if (storedData) {
+        this.sheetData = JSON.parse(storedData);
+      }
+    },
+  },
 };
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 
 #project-list-archived {
   .project-title {
@@ -195,6 +253,23 @@ export default {
   }
 }
 
+.table-container {
+  overflow-x: auto;
+  white-space: nowrap;
+  max-width: 100%;
+  border: 1px solid #ccc;
+  margin-top: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 8px 12px;
+  text-align: left;
+}
 </style>
 
 <i18n lang="json5">

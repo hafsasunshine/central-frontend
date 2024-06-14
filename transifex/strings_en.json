@@ -3800,6 +3800,10 @@
         "create": {
           "string": "New",
           "developer_comment": "This is the text of a button that is used to create a new Project."
+        },
+        "import": {
+          "string": "Import",
+          "developer_comment": "This is the text for an action, for example, the text of a button."
         }
       },
       "emptyTable": {
@@ -3813,6 +3817,9 @@
       "alert": {
         "create": {
           "string": "Your new Project has been successfully created."
+        },
+        "import": {
+          "string": "blablabla"
         }
       }
     },
