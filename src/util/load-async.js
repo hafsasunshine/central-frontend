@@ -107,6 +107,10 @@ const loaders = new Map()
     /* webpackChunkName: "component-form-draft-testing" */
     '../components/form-draft/testing.vue'
   )))
+  .set('AllForms', loader(()=> import(
+    /*added by hafsa*/
+    '../components/form/list-all.vue'
+  )))
   .set('FormOverview', loader(() => import(
     /* webpackChunkName: "component-form-overview" */
     '../components/form/overview.vue'

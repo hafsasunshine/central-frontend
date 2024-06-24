@@ -9,6 +9,7 @@ https://www.apache.org/licenses/LICENSE-2.0. No part of ODK Central,
 including this file, may be copied, modified, propagated, or distributed
 except according to the terms contained in the LICENSE file.
 -->
+<!--File edited by hafsa-->
 <template>
   <ul id="navbar-links" class="nav navbar-nav">
     <li :class="{ active: projectsLinkIsActive }">
@@ -16,6 +17,13 @@ except according to the terms contained in the LICENSE file.
         {{ $t('resource.projects') }} <span class="sr-only">{{ $t('current') }}</span>
       </router-link>
     </li>
+<!--Added by hafsa-->
+    <li :class="{ active: routePathStartsWith('/allforms')}">
+      <router-link to="/allforms">
+        Forms <span class="sr-only">{{ $t('current') }}</span>
+      </router-link>
+    </li>
+
     <li v-if="canRoute('/users')" id="navbar-links-users"
       :class="{ active: routePathStartsWith('/users') }">
       <router-link to="/users">

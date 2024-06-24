@@ -11,7 +11,7 @@ except according to the terms contained in the LICENSE file.
 */
 
 // useRoutes() returns functions related to the router.
-
+//edited by hafsa 
 import { useRoute } from 'vue-router';
 
 import { canRoute } from '../util/router';
@@ -83,17 +83,27 @@ export default memoizeForContainer(({ router, requestData }) => {
     const path = formPath(projectId, xmlFormId);
     // A project viewer can't navigate to the form overview, but anyone who can
     // navigate to the form should be able to navigate to .../submissions.
+    //console.log('path test', path);
     return canRouteToLocation(path) ? path : `${path}/submissions`;
   };
   // Returns the path to the primary page for a form. This changes based on the
   // current user's role, as well as whether the form has a published version.
   const primaryFormPath = (form) => {
     if (form.publishedAt != null) {
+      //console.log('form test ', form)
       return publishedFormPath(form.projectId, form.xmlFormId);
     } else { // eslint-disable-line no-else-return
       const path = formPath(form.projectId, form.xmlFormId, 'draft');
+      //console.log('form.projectId', form.projectId)
+      //console.log('form.xmlFormId',form.xmlFormId)
+      console.log('path', path)
       return canRouteToLocation(path) ? path : `${path}/testing`;
     }
+  };
+
+  //added by hafsa
+  const primaryFormPath2 = (form) => {
+      return publishedFormPath(form.projectId, form.xmlFormId);
   };
 
   const submissionPath = (projectId, xmlFormId, instanceId) => {
@@ -119,7 +129,7 @@ export default memoizeForContainer(({ router, requestData }) => {
 
   return {
     projectPath,
-    formPath, publishedFormPath, primaryFormPath,
+    formPath, publishedFormPath, primaryFormPath, primaryFormPath2,
     submissionPath,
     datasetPath,
     entityPath,

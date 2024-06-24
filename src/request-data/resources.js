@@ -63,6 +63,11 @@ export default ({ i18n }, createResource) => {
     transformResponse: ({ data }) => shallowReactive(transformForm(data))
   }));
 
+  //line added by hafsa
+  createResource('allForms', () => ({
+    transformResponse: ({ data }) => shallowReactive(transformForm(data))
+  }));
+
   createResource('dataset', () => ({
     transformResponse: ({ data }) => shallowReactive(data)
   }));

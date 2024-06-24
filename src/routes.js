@@ -253,6 +253,14 @@ const routes = [
       title: () => [i18n.t('resource.projects')]
     }
   }),
+//line added by hafsa
+  asyncRoute({
+    path: '/allforms',
+    component: 'AllForms',
+    props: true,
+    loading: 'page',
+  }),
+  
   asyncRoute({
     path: '/projects/:projectId([1-9]\\d*)',
     component: 'ProjectShow',
@@ -758,7 +766,9 @@ const routesByName = new Map();
     'DatasetList',
     'ProjectSettings'
   ];
+  //edited by hafsa
   const formRoutes = [
+    'AllForms',
     'FormOverview',
     'FormVersionList',
     'FormSubmissions',

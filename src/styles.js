@@ -11,6 +11,7 @@ except according to the terms contained in the LICENSE file.
 */
 
 // Import global styles.
+import 'maz-ui/styles'
 import './assets/css/bootstrap.css';
 import './assets/css/icomoon.css';
 import './assets/scss/app.scss';

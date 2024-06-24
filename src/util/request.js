@@ -66,6 +66,8 @@ const entityPath = (suffix) =>
   };
 
 export const apiPaths = {
+  //line added by hafsa
+  allForms:() => `/v1/forms`,
   // Backend generates session tokens that are URL-safe.
   session: (token) => `/v1/sessions/${token}`,
   users: (query = undefined) => `/v1/users${queryString(query)}`,

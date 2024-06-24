@@ -17,11 +17,21 @@ except according to the terms contained in the LICENSE file.
       <template v-if="step === 0">
         <p class="modal-introduction">{{ $t('introduction[0]') }}</p>
         <form @submit.prevent="submit">
+          
           <form-group ref="displayName" v-model.trim="displayName"
-            :placeholder="$t('field.displayName')" required autocomplete="off"/>
+            :placeholder="$t('field.email')" required autocomplete="off"/>
 
           <form-group ref="password" v-model.trim="password" type="password"
             :placeholder="$t('field.password')" required autocomplete="off"/>
+
+            <MazPhoneNumberInput
+              v-model="phonenumber"
+              v-model:country-code="countryCode"
+              show-code-on-list
+              :preferred-countries="['MA','FR']"
+              @update="results = $event"
+              size="xl"
+            />
 
           <div class="modal-actions">
             <button type="submit" class="btn btn-primary"
@@ -82,10 +92,16 @@ import { afterNextNavigation } from '../../util/router';
 import { apiPaths } from '../../util/request';
 import { noop } from '../../util/util';
 import { useRequestData } from '../../request-data';
+import MazPhoneNumberInput from 'maz-ui/components/MazPhoneNumberInput';
+import { ref } from 'vue'
+
+const phonenumber = ref()
+const countryCode = ref('MA')
+const results = ref()
 
 export default {
   name: 'FieldKeyNew',
-  components: { FormGroup, Spinner, Modal, FieldKeyQrPanel, SentenceSeparator },
+  components: { MazPhoneNumberInput, FormGroup, Spinner, Modal, FieldKeyQrPanel, SentenceSeparator },
   inject: ['alert'],
   props: {
     state: {
@@ -112,6 +128,7 @@ export default {
       step: 0,
       displayName: '',
       password: '',
+     phonenumber: '',
       created: null
     };
   },
@@ -121,7 +138,11 @@ export default {
         this.step = 0;
         this.displayName = '';
         this.password = '';
+        this.phonenumber = '',
         this.created = null;
+      }else {
+        // Generate a new password when the modal is shown
+        this.password = this.generatePassword();
       }
     }
   },
@@ -134,13 +155,14 @@ export default {
       this.request({
         method: 'POST',
         url: apiPaths.fieldKeys(this.project.id),
-        data: { displayName: this.displayName, password: this.password }
+        data: { displayName: this.displayName, password: this.password ,phonenumber: this.phonenumber}
       })
         .then(({ data }) => {
           // Reset the form.
           this.alert.blank();
           this.displayName = '';
           this.password = '';
+          this.phonenumber = '';
           this.step = 1;
           this.created = data;
         })
@@ -167,6 +189,15 @@ export default {
       // We do not reset this.created, because it will still be used once the
       // modal is hidden.
       this.$nextTick(this.focusInput);
+    },
+    generatePassword() {
+      const length = 12;
+      const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let password = "";
+      for (let i = 0, n = charset.length; i < length; ++i) {
+        password += charset.charAt(Math.floor(Math.random() * n));
+      }
+      return password;
     }
   }
 };

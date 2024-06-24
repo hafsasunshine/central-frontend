@@ -30,25 +30,44 @@ except according to the terms contained in the LICENSE file.
         <project-sort v-model="sortMode"/>
       </template>
       <template #body>
+        
+        <FileUploadModal v-if="modalOpen" @file-selected="handleFileSelected" @close="closeModal" />
+        
+        <div v-if="sheetData">
+          <div id="sheet-header">
+            <h2>Excel Sheet Data</h2>
+            <div class="action-buttons">
+              <button type="button" id ="btn-affect" class="btn btn-secondary" @click="toggleSelection">
+                Affecter
+              </button>
+              <button v-if="showCheckboxes" type="button" class="btn btn-secondary" @click="cancelSelection">
+                Annuler
+              </button>
+            </div>
+          </div>
+          <div class="table-container">
+          <table border="1">
+            <thead>
+              <tr>
+                <th v-if="showCheckboxes"></th> <!--Checkbox column header-->
+                <th v-for="(header, index) in sheetData[0]" :key="index">{{ header }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, rowIndex) in sheetData.slice(1)" :key="rowIndex">
+                <!-- Select Dropdown-->
+                <td v-if="showCheckboxes">
+                  <input type="checkbox" v-model="row.selected">
+                </td>
+                <td v-for="(cell, cellIndex) in row" :key="cellIndex">
+                  {{ formatCell(cell) }}
+                </td>
 
-            <FileUploadModal v-if="modalOpen" @file-selected="handleFileSelected" @close="closeModal" />
-    <div v-if="sheetData">
-      <h2>Excel Sheet Data</h2>
-      <div class="table-container">
-      <table border="1">
-        <thead>
-          <tr>
-            <th v-for="(header, index) in sheetData[0]" :key="index">{{ header }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(row, rowIndex) in sheetData.slice(1)" :key="rowIndex">
-            <td v-for="(cell, cellIndex) in row" :key="cellIndex">{{ formatCell(cell) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    </div>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        </div>
 
         <div v-if="projects.dataExists">
           <project-home-block v-for="project of chunkyProjects" :key="project.id"
@@ -196,12 +215,31 @@ export default {
     return{
       modalOpen: false,
       sheetData: null,
+      showCheckboxes: false,
     };
   },
   created() {
     this.loadStoredData();
   },
   methods: {
+    toggleSelection() {
+      this.showCheckboxes = !this.showCheckboxes;
+      if (this.showCheckboxes && this.sheetData) {
+        //initialize selected property for each row if checkboxes are shown
+        this.sheetData.slice(1).forEach(row => {
+          row.showSelect = false;
+        });
+      }
+    },
+    cancelSelection() {
+      this.showCheckboxes = false; // Hide checkboxes on cancel
+      if (this.sheetData) {
+        // Reset selected state for each row
+        this.sheetData.slice(1).forEach(row => {
+          row.selected = false;
+        });
+      }
+    },
     afterCreate(project) {
       const message = this.$t('alert.create');
       this.$router.push(this.projectPath(project.id))
@@ -253,6 +291,40 @@ export default {
   }
 }
 
+#sheet-header {
+  display: flex;
+  align-items: flex-start;
+  .action-buttons{
+    display: flex;
+    align-items: flex-start;
+  }
+  h2 {
+  font-size: 30px;
+  color: #bd006b;
+  font-weight: 600;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  #btn-affect {
+    background-color: #009ecc;
+    color: #fff;
+    border-radius: 2px;
+    font-size: 12px;
+    padding: 6px 10px 5px;
+    display: inline-block;
+    margin-bottom: 0;
+    font-weight: normal;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+  #btn-affect:hover {
+    color: #fff;
+    background-color: #0086ad;
+    border-color: #204d74;
+  }
+}
 .table-container {
   overflow-x: auto;
   white-space: nowrap;
