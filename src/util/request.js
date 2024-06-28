@@ -33,6 +33,7 @@ export const queryString = (query) => {
 
 const projectPath = (suffix) => (id, query = undefined) =>
   `/v1/projects/${id}${suffix}${queryString(query)}`;
+
 const formPath = (suffix) => (projectId, xmlFormId, query = undefined) => {
   const encodedFormId = encodeURIComponent(xmlFormId);
   const qs = queryString(query);
@@ -68,6 +69,8 @@ const entityPath = (suffix) =>
 export const apiPaths = {
   //line added by hafsa
   allForms:() => `/v1/forms`,
+  //line 2 added by hafsa
+  allMobileUsers:() => `/v1/users/mobile-users`,
   // Backend generates session tokens that are URL-safe.
   session: (token) => `/v1/sessions/${token}`,
   users: (query = undefined) => `/v1/users${queryString(query)}`,
@@ -171,7 +174,8 @@ export const apiPaths = {
   entity: entityPath(''),
   entityAudits: entityPath('/audits'),
   entityVersions: entityPath('/versions'),
-  fieldKeys: projectPath('/app-users'),
+  //fieldKeys: projectPath('/app-users'), //original value
+  fieldKeys:() =>`/v1/users/mobile-users`, //added by hafsa
   serverUrlForFieldKey: (token, projectId) =>
     `/v1/key/${token}/projects/${projectId}`,
   audits: (query) => `/v1/audits${queryString(query)}`

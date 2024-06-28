@@ -292,13 +292,14 @@ export default {
 }
 
 #sheet-header {
-  display: flex;
+  
   align-items: flex-start;
   .action-buttons{
-    display: flex;
-    align-items: flex-start;
+    
+    align-items: flex-end;
   }
   h2 {
+  width:60%;
   font-size: 30px;
   color: #bd006b;
   font-weight: 600;

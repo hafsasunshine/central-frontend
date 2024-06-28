@@ -17,6 +17,11 @@ except according to the terms contained in the LICENSE file.
         <li :class="tabClass('')" role="presentation">
           <router-link :to="tabPath('')">{{ $t('resource.webUsers') }}</router-link>
         </li>
+
+        <li :class="tabClass('mobile-users')" role="presentation">
+          <router-link :to="tabPath('mobile-users')">Mobile Users</router-link>
+        </li>
+
       </template>
     </page-head>
     <page-body>
@@ -25,17 +30,22 @@ except according to the terms contained in the LICENSE file.
   </div>
 </template>
 
-<script setup>
+<script>
 import PageBody from '../page/body.vue';
 import PageHead from '../page/head.vue';
 
 import useTabs from '../../composables/tabs';
+export default {
+  name: 'UserHome',
+  components: {PageBody, PageHead},
+  setup() {
+    const { tabPath, tabClass } = useTabs('/users');
+    return {tabPath, tabClass}
+  },
+  
 
-defineOptions({
-  name: 'UserHome'
-});
+}
 
-const { tabPath, tabClass } = useTabs('/users');
 </script>
 
 <style lang="scss">

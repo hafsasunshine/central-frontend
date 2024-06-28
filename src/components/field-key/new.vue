@@ -24,14 +24,14 @@ except according to the terms contained in the LICENSE file.
           <form-group ref="password" v-model.trim="password" type="password"
             :placeholder="$t('field.password')" required autocomplete="off"/>
 
-            <MazPhoneNumberInput
-              v-model="phonenumber"
-              v-model:country-code="countryCode"
-              show-code-on-list
-              :preferred-countries="['MA','FR']"
-              @update="results = $event"
-              size="xl"
-            />
+          <MazPhoneNumberInput
+            v-model="phonenumber"
+            default-country-code="MA"
+            show-code-on-list
+            :preferred-countries="['MA','FR']"
+            @update="results = $event"
+            size="xl"
+          />
 
           <div class="modal-actions">
             <button type="submit" class="btn btn-primary"
@@ -154,17 +154,22 @@ export default {
       console.log("Submitting:", this.displayName, this.password);
       this.request({
         method: 'POST',
-        url: apiPaths.fieldKeys(this.project.id),
+        url: apiPaths.fieldKeys(),
         data: { displayName: this.displayName, password: this.password ,phonenumber: this.phonenumber}
       })
         .then(({ data }) => {
-          // Reset the form.
-          this.alert.blank();
-          this.displayName = '';
-          this.password = '';
-          this.phonenumber = '';
-          this.step = 1;
-          this.created = data;
+          if (!isProblem(data)) {
+            console.log('successful');
+            // Reset the form.
+            this.alert.blank();
+            this.displayName = '';
+            this.password = '';
+            this.phonenumber = '';
+            this.step = 1;
+            this.created = data;
+          } else {
+            console.log('error in request ')
+          }
         })
         .catch(noop);
     },

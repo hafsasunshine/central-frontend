@@ -90,13 +90,9 @@ export default memoizeForContainer(({ router, requestData }) => {
   // current user's role, as well as whether the form has a published version.
   const primaryFormPath = (form) => {
     if (form.publishedAt != null) {
-      //console.log('form test ', form)
       return publishedFormPath(form.projectId, form.xmlFormId);
     } else { // eslint-disable-line no-else-return
       const path = formPath(form.projectId, form.xmlFormId, 'draft');
-      //console.log('form.projectId', form.projectId)
-      //console.log('form.xmlFormId',form.xmlFormId)
-      console.log('path', path)
       return canRouteToLocation(path) ? path : `${path}/testing`;
     }
   };

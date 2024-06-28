@@ -143,6 +143,10 @@ const loaders = new Map()
     /* webpackChunkName: "component-home-config-section" */
     '../components/home/config-section.vue'
   )))
+  .set('MobileUsersList', loader(() => import (
+    /* added by hafsa*/
+    '../components/user/mobile-users/list-mobile-users.vue'
+  )))
   .set('NotFound', loader(() => import(
     /* webpackChunkName: "component-not-found" */
     '../components/not-found.vue'

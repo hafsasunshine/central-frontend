@@ -9,6 +9,7 @@ https://www.apache.org/licenses/LICENSE-2.0. No part of ODK Central,
 including this file, may be copied, modified, propagated, or distributed
 except according to the terms contained in the LICENSE file.
 */
+//file edited by hafsa
 import { always, equals } from 'ramda';
 
 import AccountLogin from './components/account/login.vue';
@@ -608,6 +609,12 @@ const routes = [
           },
           title: () => [i18n.t('resource.webUsers')]
         }
+      }),
+      //added by hafsa
+      asyncRoute({
+        path: 'mobile-users',
+        component: 'MobileUsersList',
+        loading: 'tab',
       })
     ]
   }),
