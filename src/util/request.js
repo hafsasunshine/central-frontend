@@ -71,6 +71,8 @@ export const apiPaths = {
   allForms:() => `/v1/forms`,
   //line 2 added by hafsa
   allMobileUsers:() => `/v1/users/mobile-users`,
+  //line3 added by hafsa
+  affectations:() => '/v1/affectations',
   // Backend generates session tokens that are URL-safe.
   session: (token) => `/v1/sessions/${token}`,
   users: (query = undefined) => `/v1/users${queryString(query)}`,

@@ -37,12 +37,17 @@ except according to the terms contained in the LICENSE file.
           <div id="sheet-header">
             <h2>Excel Sheet Data</h2>
             <div class="action-buttons">
-              <button type="button" id ="btn-affect" class="btn btn-secondary" @click="toggleSelection">
-                Affecter
+              <button v-if="!showCheckboxes" type="button" id="btn-affect" class="btn btn-secondary" @click="toggleSelection">
+                Select
               </button>
-              <button v-if="showCheckboxes" type="button" class="btn btn-secondary" @click="cancelSelection">
-                Annuler
-              </button>
+              <div v-if="showCheckboxes">
+                <button type="button" class="btn btn-secondary" @click="affectSelection">
+                  Affect
+                </button>
+                <button type="button" class="btn btn-secondary" @click="cancelSelection">
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
           <div class="table-container">
@@ -60,7 +65,7 @@ except according to the terms contained in the LICENSE file.
                   <input type="checkbox" v-model="row.selected">
                 </td>
                 <td v-for="(cell, cellIndex) in row" :key="cellIndex">
-                  {{ formatCell(cell) }}
+                  {{ formatCell(cell, sheetData[0][cellIndex]) }}
                 </td>
 
               </tr>
@@ -68,7 +73,8 @@ except according to the terms contained in the LICENSE file.
           </table>
         </div>
         </div>
-
+        <MobileUsersSideBar :isOpenedRight="isOpenedRight" @update:isOpenedRight="isOpenedRight" 
+        @confirm="postAffectation" :selectedUsers="selectedUsers"/>
         <div v-if="projects.dataExists">
           <project-home-block v-for="project of chunkyProjects" :key="project.id"
             :project="project" :sort-func="sortFunction"
@@ -119,16 +125,18 @@ import ProjectNew from './new.vue';
 import ProjectHomeBlock from './home-block.vue';
 import ProjectSort from './sort.vue';
 import SentenceSeparator from '../sentence-separator.vue';
+import MobileUsersSideBar from './sidebar/mobile-users.vue';
 
 import FileUploadModal from './import.vue'; 
 import { format } from 'date-fns';
-
+import useRequest from '../../composables/request';
 import sortFunctions from '../../util/sort';
 import useChunkyArray from '../../composables/chunky-array';
 import useRoutes from '../../composables/routes';
 import { modalData } from '../../util/reactivity';
 import { sumUnderThreshold } from '../../util/util';
 import { useRequestData } from '../../request-data';
+import { apiPaths } from '../../util/request';
 
 export default {
   name: 'ProjectList',
@@ -141,11 +149,12 @@ export default {
     ProjectSort,
     SentenceSeparator,
     FileUploadModal,
+    MobileUsersSideBar
   },
   inject: ['alert'],
   setup() {
     const { currentUser, projects } = useRequestData();
-
+    const { request, awaitingResponse } = useRequest();
     const sortMode = ref('latest');
     const sortFunction = computed(() => sortFunctions[sortMode.value]);
 
@@ -166,6 +175,7 @@ export default {
       createModal: modalData(),
       importModal: modalData(),
       projectPath,
+      request, awaitingResponse
     };
   },
   computed: {
@@ -216,6 +226,8 @@ export default {
       modalOpen: false,
       sheetData: null,
       showCheckboxes: false,
+      isOpenedRight: false,
+      selectedUsers: []
     };
   },
   created() {
@@ -224,6 +236,7 @@ export default {
   methods: {
     toggleSelection() {
       this.showCheckboxes = !this.showCheckboxes;
+      //this.isOpenedRight = this.showCheckboxes; 
       if (this.showCheckboxes && this.sheetData) {
         //initialize selected property for each row if checkboxes are shown
         this.sheetData.slice(1).forEach(row => {
@@ -233,12 +246,16 @@ export default {
     },
     cancelSelection() {
       this.showCheckboxes = false; // Hide checkboxes on cancel
+      this.isOpenedRight = false;
       if (this.sheetData) {
         // Reset selected state for each row
         this.sheetData.slice(1).forEach(row => {
           row.selected = false;
         });
       }
+    },
+    affectSelection() {
+      this.isOpenedRight = true; // Open sidebar on affect
     },
     afterCreate(project) {
       const message = this.$t('alert.create');
@@ -261,11 +278,11 @@ export default {
       this.storeData(sheetData);
       this.modalOpen = false; //close the modal after file selection
     },
-    formatCell(cell){
-      //check if the cell is a date serial number and format it 
-      if (typeof cell === 'number') {
-        const date = new Date ((cell - 25569) * 86400 * 1000);
-        return format (date, 'MM/dd/yyyy');  
+    formatCell(cell, header) {
+      // Check if the header is 'date de declaration' and format the cell if it is
+      if (header === 'date de declaration' && typeof cell === 'number') {
+        const date = new Date((cell - 25569) * 86400 * 1000);
+        return format(date, 'MM/dd/yyyy');
       }
       return cell;
     },
@@ -278,10 +295,55 @@ export default {
         this.sheetData = JSON.parse(storedData);
       }
     },
-  },
+    closeSidebar() {
+      this.sidebarOpen = false;
+    },
+    handleConfirmSelection(selectedUsers) {
+      console.log('Selected Users:', selectedUsers);
+      console.log('Selected Projects:', this.sheetData.filter(row => row.selected));
+    },
+    
+    postAffectation() {
+      // Collect selected projects
+      const selectedProjects = this.sheetData.slice(1).filter(row => row.selected);
+
+      console.log('selectedprojects:', selectedProjects);
+      // Collect selected user IDs
+      const selectedUserIds = this.selectedUsers.map(user => user.id);
+      console.log('selected users id:', selectedUserIds);
+
+      // Prepare the data to be sent to the server
+      const data = {
+        projects: selectedProjects,
+        users: selectedUserIds
+      };
+
+      // Send a POST request to save the selected projects and users
+      this.request({
+        method: 'POST',
+        url: apiPaths.affectations(),
+        data: data
+      })
+      .then(({ data }) => {
+        if (data) {
+          console.log('successful');
+          this.alert.success('Affectation successful');
+          // Reset the selection
+          this.cancelSelection();
+          this.closeSidebar();
+        } else {
+          console.log('error in request');
+          this.alert.error('Affectation failed');
+        }
+      })
+      .catch((error) => {
+        console.log('error in request:', error);
+        this.alert.error('Affectation failed');
+      });
+    }
+  }
 };
 </script>
-
 <style scoped lang="scss">
 
 #project-list-archived {
