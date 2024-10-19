@@ -55,7 +55,7 @@ except according to the terms contained in the LICENSE file.
             <thead>
               <tr>
                 <th v-if="showCheckboxes"></th> <!--Checkbox column header-->
-                <th v-for="(header, index) in sheetData[0]" :key="index">{{ header }}</th>
+                <th v-for="(header, index) in sheetData[0]" :key="index">{{ formatHeader(header) }}</th>
               </tr>
             </thead>
             <tbody>
@@ -274,6 +274,24 @@ export default {
       this.modalOpen = false;
     },
     handleFileSelected(sheetData){
+      const columnsToRemove = ['PROPERTY_LONGITUDE', 'PROPERTY_LATITUDE'];
+      const indicesToRemove = columnsToRemove
+        .map(column => sheetData[0].indexOf(column))
+        .filter(index => index > -1) // Ensure the column exists
+        .sort((a, b) => b - a); // Sort indices in descending order
+
+      // Remove the columns from the header
+      indicesToRemove.forEach(index => {
+        sheetData[0].splice(index, 1);
+      });
+
+      // Remove the columns from each row
+      sheetData.slice(1).forEach(row => {
+        indicesToRemove.forEach(index => {
+          row.splice(index, 1);
+        });
+      });
+
       this.sheetData = sheetData;
       this.storeData(sheetData);
       this.modalOpen = false; //close the modal after file selection
@@ -285,6 +303,13 @@ export default {
         return format(date, 'MM/dd/yyyy');
       }
       return cell;
+    },
+    formatHeader(header) {
+    // Replace underscores with spaces and capitalize the first letter of each word
+    return header
+      .toLowerCase()
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, char => char.toUpperCase());
     },
     storeData(data) {
       localStorage.setItem('sheetData', JSON.stringify(data));
@@ -298,11 +323,6 @@ export default {
     closeSidebar() {
       this.sidebarOpen = false;
     },
-    handleConfirmSelection(selectedUsers) {
-      console.log('Selected Users:', selectedUsers);
-      console.log('Selected Projects:', this.sheetData.filter(row => row.selected));
-    },
-    
     postAffectation() {
       // Collect selected projects
       const selectedProjects = this.sheetData.slice(1).filter(row => row.selected);
@@ -394,16 +414,39 @@ export default {
   max-width: 100%;
   border: 1px solid #ccc;
   margin-top: 20px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+
+  tbody {
+    height: 10%;
+    overflow-y: auto;
+  }
+  tr:nth-child(even){
+      background:#ECF0F1;
+  }
+  tr{
+    td{
+        padding: 15px;
+      }
+  }
 }
 
 th, td {
   padding: 8px 12px;
   text-align: left;
+}
+
+th{
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: -0.02em;
+  color: #0c7bd1;
+
 }
 </style>
 
